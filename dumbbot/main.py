@@ -30,7 +30,10 @@ def execute_turn() -> None:
         ct.make_move(direction)
         return
 
-    ct.make_move(Direction.NORTH)
+    if ct.can_split(ct.get_length() - 1):
+        ct.do_split(ct.get_length() - 1)
+    else:
+        ct.make_move(Direction.NORTH)
 
 def main() -> None:
     global ct, game
