@@ -8,6 +8,8 @@ game: unswbc.Game
 # Seed so we get the same random generator every time.
 random.seed(0)
 
+S = 500 / 2
+
 def execute_turn() -> None:
     """Step onto the first open neighbouring tile."""
     here = ct.get_position()
@@ -16,6 +18,10 @@ def execute_turn() -> None:
     directions = Direction.get_direction_list()
     directions.remove(ct.get_dir().get_opposite())
     random.shuffle(directions)
+
+    if game.get_round_num() < S and ct.can_split(2):
+        ct.do_split(2)
+        return
 
     for direction in directions:
         
