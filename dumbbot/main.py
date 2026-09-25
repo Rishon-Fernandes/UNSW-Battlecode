@@ -14,6 +14,7 @@ def execute_turn() -> None:
     here_tile = ct.get_tile(here)
 
     directions = Direction.get_direction_list()
+    directions.remove(ct.get_dir().get_opposite())
     random.shuffle(directions)
 
     for direction in directions:
@@ -30,10 +31,11 @@ def execute_turn() -> None:
         ct.make_move(direction)
         return
 
-    if ct.can_split(ct.get_length() - 1):
-        ct.do_split(ct.get_length() - 1)
+    if ct.can_split(ct.get_length() - 2):
+        ct.do_split(ct.get_length() - 2)
+        ct.output_log("splitting")
     else:
-        ct.make_move(Direction.NORTH)
+        ct.make_move(directions[0])
 
 def main() -> None:
     global ct, game
