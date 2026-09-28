@@ -37,7 +37,8 @@ def bfs():
         # source_dir is the direction parent -> child (the child is the current tile)
         # parent is parent of the tile
         # CAN OPTIMISE by storing only the parent and not the source_dir as that can be derived
-        tile, parent, source_dir = q.popleft()
+        left_element = q.popleft()
+        tile, parent, source_dir = left_element
         if tile.has_pearl():
             while parent[1] is not None:
                 prev = parent
@@ -54,16 +55,17 @@ def bfs():
             if edge_in_dir == EdgeType.PORTAL:
                 continue
             
-            tile_in_dir = tile.get_position().add_dir(dir)
+            tile_in_dir_pos = tile.get_position().add_dir(dir)
+            tile_in_dir_tile = ct.get_tile(tile_in_dir_pos)
             
-            if tile_in_dir.get_dragon() is not None or not tile_in_dir.is_in_vision():
+            if tile_in_dir_tile.get_dragon() is not None or not tile_in_dir_pos.is_in_vision():
                 continue
 
-            if visited[tile.get_position().y][tile.get_position().x]:
+            if visited[tile_in_dir_pos.y][tile_in_dir_pos.x]:
                 continue
             
-            q.append((tile_in_dir, tile, dir))
-            visited[tile.get_position().y][tile.get_position().x] = 1
+            q.append((tile_in_dir_tile, left_element, dir))
+            visited[tile_in_dir_pos.y][tile_in_dir_pos.x] = 1
 
     return None
 
@@ -116,3 +118,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
