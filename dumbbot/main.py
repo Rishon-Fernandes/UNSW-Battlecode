@@ -33,7 +33,7 @@ def bfs():
 
     ct.output_log(here.get_position().x)
 
-    while q:
+    while len(q) != 0:
         # source_dir is the direction parent -> child (the child is the current tile)
         # parent is parent of the tile
         # CAN OPTIMISE by storing only the parent and not the source_dir as that can be derived
