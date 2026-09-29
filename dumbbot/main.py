@@ -26,12 +26,11 @@ def bfs():
     width, height = game.get_map_size()
     visited = [[0] * width] * height
 
-    # queue
     here = ct.get_tile(ct.get_position())
-    q = deque([(here, None, None)])
-    visited[here.get_position().y][tile.get_position().x] = 1
 
-    ct.output_log(here.get_position().x)
+    # tile, initial direction
+    q = deque([(here, None)])
+    visited[here.get_position().y][here.get_position().x] = 1
 
     while len(q) != 0:
         # source_dir is the direction parent -> child (the child is the current tile)
@@ -39,13 +38,19 @@ def bfs():
         # CAN OPTIMISE by storing only the parent and not the source_dir as that can be derived
         left_element = q.popleft()
         tile, parent, source_dir = left_element
+        """
         if tile.has_pearl():
-            while parent[1] is not None:
+            while parent[1] != (here, None, None):
                 prev = parent
                 parent = parent[1]
             return prev[2]
+        """
+
+        if tile.has_pearl():
+            return tile[1]
         
         directions = Direction.get_direction_list()
+        directions.remove(ct.get_dir().get_opposite())
         for dir in directions:
             edge_in_dir = tile.get_edge(dir).get_edge_type()
             if edge_in_dir == EdgeType.KELP:
@@ -61,10 +66,13 @@ def bfs():
             if tile_in_dir_tile.get_dragon() is not None or not tile_in_dir_pos.is_in_vision():
                 continue
 
-            if visited[tile_in_dir_pos.y][tile_in_dir_pos.x]:
+            if visited[tile_in_dir_pos.y][tile_in_dir_pos.x] == 1:
                 continue
-            
-            q.append((tile_in_dir_tile, left_element, dir))
+
+            if tile[1] is None:
+                q.append((tile_in_dir_tile, dir))
+            else:
+                q.append((tile_in_dir_tile, tile[1]))
             visited[tile_in_dir_pos.y][tile_in_dir_pos.x] = 1
 
     return None
@@ -77,13 +85,15 @@ def execute_turn() -> None:
 
     directions = Direction.get_direction_list()
     directions.remove(ct.get_dir().get_opposite())
-    random.shuffle(directions)
+    # random.shuffle(directions)
 
-    if game.get_round_num() < S and ct.can_split(2):
-        ct.do_split(2)
-        return
+    # if game.get_round_num() < S and ct.can_split(2):
+    #     ct.output_log("Splitting as round num < S")
+    #     ct.do_split(2)
+    #     return
 
     bfs_dir = bfs()
+    print(bfs_dir)
     if bfs_dir is not None:
         ct.make_move(bfs_dir)
         return
@@ -106,6 +116,7 @@ def execute_turn() -> None:
         ct.do_split(ct.get_length() - 2)
         ct.output_log("splitting")
     else:
+        ct.output_log("Moving in", directions[0].value)
         ct.make_move(directions[0])
 
 def main() -> None:
