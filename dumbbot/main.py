@@ -21,7 +21,11 @@ def closest_pearl():
                     return (x, y)
     return None
 
-# PROBLEM IS WITH THE visited ARRAY!
+def has_or_will_have_pearl(tile, steps):
+    if tile.has_pearl(): return True
+    elif tile.get_pearl_time() < 0: return False
+    elif tile.get_pearl_time() <= steps: return True
+
 def bfs():
     width, height = game.get_map_size()
     
@@ -29,14 +33,15 @@ def bfs():
 
     here = ct.get_tile(ct.get_position())
 
-    q = deque([(here, None)])
+    # tile, direction taken at first step from here tile to second tile, number of steps from here tile to current tile
+    q = deque([(here, None, 0)])
     visited[here.get_position().y][here.get_position().x] = 1
 
     while len(q) != 0:
         left_element = q.popleft()
-        tile, source_dir = left_element
+        tile, source_dir, steps = left_element
 
-        if tile.has_pearl():
+        if source_dir != None and has_or_will_have_pearl(tile, steps):
             return source_dir
 
         directions = Direction.get_direction_list()
@@ -62,9 +67,9 @@ def bfs():
                 continue
 
             if source_dir is None:
-                q.append((tile_in_dir_tile, dir))
+                q.append((tile_in_dir_tile, dir, steps + 1))
             else:
-                q.append((tile_in_dir_tile, source_dir))
+                q.append((tile_in_dir_tile, source_dir, steps + 1))
             
             visited[tile_in_dir_pos.y][tile_in_dir_pos.x] = 1
     return None
