@@ -84,7 +84,7 @@ def execute_turn() -> None:
     directions.remove(ct.get_dir().get_opposite())
     random.shuffle(directions)
 
-    if game.get_round_num() < S and ct.can_split(2):
+    if game.get_round_num() < S and ct.can_split(2) and ct.get_unit_count() <= game.get_unit_limi():
         ct.output_log("Splitting as round num < S")
         ct.do_split(2)
         return
@@ -107,7 +107,7 @@ def execute_turn() -> None:
         ct.make_move(direction)
         return
 
-    if ct.can_split(ct.get_length() - 2):
+    if ct.can_split(ct.get_length() - 2) and ct.get_unit_count() <= game.get_unit_limi():
         ct.do_split(ct.get_length() - 2)
     else:
         ct.make_move(directions[0])
