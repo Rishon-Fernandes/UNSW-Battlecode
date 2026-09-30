@@ -21,45 +21,53 @@ def closest_pearl():
                     return (x, y)
     return None
 
+# PROBLEM IS WITH THE visited ARRAY!
 def bfs():
-    # keeps track of whether a tile has been in the q or not, that is, traversed or not
     width, height = game.get_map_size()
-    visited = [[0] * width] * height
+    # visited = [[0] * width] * height CRAZY ERROR
+    visited = [[0] * width for _ in range(height)]
+    # ct.output_log(len(visited), len(visited[0]), height, width)
 
     here = ct.get_tile(ct.get_position())
 
-    # tile, initial direction
     q = deque([(here, None)])
     visited[here.get_position().y][here.get_position().x] = 1
 
+    i = 0
     while len(q) != 0:
         left_element = q.popleft()
         tile, source_dir = left_element
-        ct.output_log((tile.get_position().x, tile.get_position().y))
 
         if tile.has_pearl():
             return source_dir
+
+        ct.output_log("Exploring neighbors of:", tile.get_position().x, tile.get_position().y)
         
         directions = Direction.get_direction_list()
+
         for dir in directions:
+            # if i == 0:
+            #     ct.output_log(visited)
+            # ct.output_log(dir)
             edge_in_dir = tile.get_edge(dir).get_edge_type()
             if edge_in_dir == EdgeType.KELP:
                 continue
 
             # TODO: FIGURE OUT HOW TO DEAL WITH PORTALS!!
-            # if edge_in_dir == EdgeType.PORTAL:
-            #     continue
             
             tile_in_dir_pos = tile.get_position().add_dir(dir)
 
             if not tile_in_dir_pos.is_in_vision():
-                continue
+                continue 
 
             tile_in_dir_tile = ct.get_tile(tile_in_dir_pos)
             
             if tile_in_dir_tile.get_dragon() is not None:
                 continue
 
+            # ct.output_log(visited)
+            
+            # ct.output_log("visited value of", tile_in_dir_pos.x, tile_in_dir_pos.y, "is", visited[tile_in_dir_pos.y][tile_in_dir_pos.x])
             if visited[tile_in_dir_pos.y][tile_in_dir_pos.x] == 1:
                 continue
 
@@ -69,8 +77,7 @@ def bfs():
                 q.append((tile_in_dir_tile, source_dir))
             
             visited[tile_in_dir_pos.y][tile_in_dir_pos.x] = 1
-
-    ct.output_log("BFS FAIL")
+        # i += 1
     return None
 
 
@@ -78,6 +85,10 @@ def execute_turn() -> None:
     """Step onto the first open neighbouring tile."""
     here = ct.get_position()
     here_tile = ct.get_tile(here)
+
+    directions = Direction.get_direction_list()
+    directions.remove(ct.get_dir().get_opposite())
+    random.shuffle(directions)
 
     # if game.get_round_num() < S and ct.can_split(2):
     #     ct.output_log("Splitting as round num < S")
@@ -87,14 +98,7 @@ def execute_turn() -> None:
     bfs_dir = bfs()
     if bfs_dir is not None:
         ct.make_move(bfs_dir)
-        ct.output_log("bfs success:", bfs_dir.value())
         return
-
-    ct.output_log("bfs fail")
-
-    directions = Direction.get_direction_list()
-    directions.remove(ct.get_dir().get_opposite())
-    random.shuffle(directions)
     
     for direction in directions:
         
