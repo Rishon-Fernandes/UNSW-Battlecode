@@ -9,7 +9,7 @@ game: unswbc.Game
 # Seed so we get the same random generator every time.
 random.seed(0)
 
-S = 500 / 2
+S = 500 * 3 / 4
 
 # Not used in (current) bfs. May need for smth else.
 def closest_pearl():
