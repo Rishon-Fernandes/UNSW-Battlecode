@@ -33,48 +33,44 @@ def bfs():
     visited[here.get_position().y][here.get_position().x] = 1
 
     while len(q) != 0:
-        # source_dir is the direction parent -> child (the child is the current tile)
-        # parent is parent of the tile
-        # CAN OPTIMISE by storing only the parent and not the source_dir as that can be derived
         left_element = q.popleft()
-        tile, parent, source_dir = left_element
-        """
-        if tile.has_pearl():
-            while parent[1] != (here, None, None):
-                prev = parent
-                parent = parent[1]
-            return prev[2]
-        """
+        tile, source_dir = left_element
+        ct.output_log((tile.get_position().x, tile.get_position().y))
 
         if tile.has_pearl():
-            return tile[1]
+            return source_dir
         
         directions = Direction.get_direction_list()
-        directions.remove(ct.get_dir().get_opposite())
         for dir in directions:
             edge_in_dir = tile.get_edge(dir).get_edge_type()
             if edge_in_dir == EdgeType.KELP:
                 continue
 
             # TODO: FIGURE OUT HOW TO DEAL WITH PORTALS!!
-            if edge_in_dir == EdgeType.PORTAL:
-                continue
+            # if edge_in_dir == EdgeType.PORTAL:
+            #     continue
             
             tile_in_dir_pos = tile.get_position().add_dir(dir)
+
+            if not tile_in_dir_pos.is_in_vision():
+                continue
+
             tile_in_dir_tile = ct.get_tile(tile_in_dir_pos)
             
-            if tile_in_dir_tile.get_dragon() is not None or not tile_in_dir_pos.is_in_vision():
+            if tile_in_dir_tile.get_dragon() is not None:
                 continue
 
             if visited[tile_in_dir_pos.y][tile_in_dir_pos.x] == 1:
                 continue
 
-            if tile[1] is None:
+            if source_dir is None:
                 q.append((tile_in_dir_tile, dir))
             else:
-                q.append((tile_in_dir_tile, tile[1]))
+                q.append((tile_in_dir_tile, source_dir))
+            
             visited[tile_in_dir_pos.y][tile_in_dir_pos.x] = 1
 
+    ct.output_log("BFS FAIL")
     return None
 
 
@@ -83,20 +79,22 @@ def execute_turn() -> None:
     here = ct.get_position()
     here_tile = ct.get_tile(here)
 
-    directions = Direction.get_direction_list()
-    directions.remove(ct.get_dir().get_opposite())
-    # random.shuffle(directions)
-
     # if game.get_round_num() < S and ct.can_split(2):
     #     ct.output_log("Splitting as round num < S")
     #     ct.do_split(2)
     #     return
 
     bfs_dir = bfs()
-    print(bfs_dir)
     if bfs_dir is not None:
         ct.make_move(bfs_dir)
+        ct.output_log("bfs success:", bfs_dir.value())
         return
+
+    ct.output_log("bfs fail")
+
+    directions = Direction.get_direction_list()
+    directions.remove(ct.get_dir().get_opposite())
+    random.shuffle(directions)
     
     for direction in directions:
         
@@ -108,15 +106,12 @@ def execute_turn() -> None:
         if ahead.get_dragon() is not None:
             continue
 
-        ct.output_log("Moving in", direction.value)
         ct.make_move(direction)
         return
 
     if ct.can_split(ct.get_length() - 2):
         ct.do_split(ct.get_length() - 2)
-        ct.output_log("splitting")
     else:
-        ct.output_log("Moving in", directions[0].value)
         ct.make_move(directions[0])
 
 def main() -> None:
@@ -130,3 +125,7 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 
+
+"""
+If we call for a tile not in vision then the game just stops and dragon dies. Be careful.
+"""
